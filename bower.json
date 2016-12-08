@@ -1,0 +1,18 @@
+{
+  "name": "collectorapi",
+  "description": "GCC Collector Api",
+  "main": "index.js",
+  "author": "GCC",
+  "moduleType": [
+    "amd"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/components",
+    "test",
+    "tests"
+  ]
+}

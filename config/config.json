@@ -1,0 +1,133 @@
+{
+    "databaseConfig": {
+        "database": "db_pics",
+        "instance": [
+            {
+                "host": "192.168.1.119",
+                "port": 27017
+            }
+        ]
+    },
+    "redis": {
+        "port": "6379",
+        "host": "192.168.1.104",
+        "max": 10,
+        "db": 1
+    },
+    "middleware": {
+        "compress": {
+            "enabled": true,
+            "priority": 10,
+            "module": "compression"
+        },
+        "favicon": {
+            "priority": 30,
+            "enabled": false
+        },
+        "static": {
+            "priority": 40,
+            "enabled": false
+
+        },
+        "logger": {
+            "priority": 50,
+            "enabled": true,
+            "module": {
+                "name": "morgan",
+                "arguments": [
+                    "short"
+                ]
+            }
+        },
+        "json": {
+            "priority": 60,
+            "enabled": true,
+            "module": {
+                "name": "body-parser",
+                "method": "json",
+                "arguments": [
+                    {
+                        "limit": "1mb"
+                    }
+                ]
+            }
+        },
+        "cookieParser": {
+            "enabled": true,
+            "priority": 90,
+            "module": {
+                "name": "cookie-parser",
+                "arguments": [
+                    "gcc_smile"
+                ]
+            }
+        },
+        "session": {
+            "enabled": true,
+            "priority": 100,
+            "module": {
+                "name": "path:./middleware/session",
+                "arguments": [
+                    {
+                        "name": "bw.sid",
+                        "secret": "gcc_smile",
+                        "cookie": {
+                            "path": "/",
+                            "httpOnly": true,
+                            "maxAge": 604800000
+                        },
+                        //"rolling": true,
+                        "resave": false,
+                        //每次都保存cookie变化，延长过期时间
+                        "saveUninitialized": true,
+                        //客户端没有cookie的情况下，生成cookie保存session
+                        "unset": "destroy",
+                        "proxy": false
+                    }
+                ]
+            }
+        },
+        "appsec": {
+            "enabled": false,
+            "priority": 110,
+            "module": {
+                "name": "lusca",
+                "arguments": [
+                    {
+                        "csrf": {
+                            "cookie": "_csrf"
+                        },
+                        "xframe": "SAMEORIGIN",
+                        "p3p": false,
+                        "csp": false
+                    }
+                ]
+            }
+        },
+        "router": {
+            "priority": 120,
+            "module": {
+                "name": "express-enrouten",
+                "arguments": [
+                    {
+                        "directory": "path:./controllers"
+                    }
+                ]
+            }
+        },
+        "fileNotFound": {
+            "priority": 130,
+            "enabled": true,
+            "module": {
+                "name": "path:./middleware/404"
+            }
+        },
+        "serverError": {
+            "priority": 140,
+            "enabled": false,
+            "module": {
+                "name": "path:./middleware/500"
+            }
+        }
+    }
+}
