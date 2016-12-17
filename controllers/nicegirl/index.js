@@ -2,6 +2,7 @@
 
 var db = require($ROOT + '/models/nicegirl/index'),
     utils = require($ROOT + '/lib/utils'),
+    moment = require('moment'),
     auth = require($ROOT + '/lib/auth')
 
 /**
@@ -64,9 +65,19 @@ var getAlbum = function(req, res, next){
     db.GirlAlbum
         .findOne({_id:req.query._id})
         .select('_id cover picNum pics tag name girl')
+        .lean(true)
         .exec(function(err, album){
             if (err){
                 return next(err);
+            }
+            album.isVip = true;
+            if(!req.user
+                || !req.user.vipEndTime
+                || moment(req.user.vipEndTime).format('YYYYMMDD') < moment(new Date()).format('YYYYMMDD')
+            ){
+                album.unlock = album.pics.length - 5;
+                album.pics = album.pics.slice(0,6);
+                album.isVip = false;
             }
             return res.json({result: 1, data: album});
         });
@@ -195,7 +206,7 @@ module.exports = function (router) {
     router.get('/albums', getAlbums);
 
     //获取指定专辑
-    router.get('/album', auth.isLogin, getAlbum);
+    router.get('/album', auth.getUser, getAlbum);
 
     //获取指定专辑的更多
     router.get('/album/more', getAlbumMore);

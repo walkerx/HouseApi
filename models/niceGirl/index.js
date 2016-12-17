@@ -12,3 +12,4 @@ exports.GirlApp = mongoose.model('GirlApp');
 exports.GirlInfo = mongoose.model('GirlInfo');
 exports.GirlTags = mongoose.model('GirlTags');
 exports.GirlVip = mongoose.model('GirlVip');
+exports.GirlOrder = mongoose.model('GirlOrder');

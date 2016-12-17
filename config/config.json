@@ -74,7 +74,7 @@
                         "cookie": {
                             "path": "/",
                             "httpOnly": true,
-                            "maxAge": 604800000
+                            "maxAge": 2592000000 //30天
                         },
                         //"rolling": true,
                         "resave": false,

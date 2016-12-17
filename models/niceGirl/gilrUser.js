@@ -9,9 +9,10 @@ var GirlUserSchema = new Schema({
     qq: {},        //QQ登陆
     weChat: {},    //微信登陆
     hashed_password: {type: String},
-    provider: {type: Number, default: 1},  // 1:快速登录   2:微信  3:QQ  4:手机   5:微博
-    status: {type: Number},  //0 不可见  1 可见  2 删除
+    provider: {type: String},                   // 1:快速登录   2:微信  3:QQ  4:手机   5:微博
+    status: {type: Number},                                 //0 不可见  1 可见  2 删除
     session:{type: String},
+    vipEndTime: {type: Date},                               //vip截止时间
     register_at: {type: Date, require: true, default: Date.now},
     lastLogin_at: {type: Date, require: true, default: new Date()}
 }, {autoIndex: false, versionKey: false});
