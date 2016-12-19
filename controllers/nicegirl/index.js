@@ -40,7 +40,7 @@ var getAlbums = function(req, res, next){
         .findOne()
         .select('-created_at')
         .exec(function(err, ads){
-            db.GirlAlbum.find({tag: req.query.tag})
+            db.GirlAlbum.find({tag: req.query.tag, picNum: {$gt: 10}})
                 .select('_id cover picNum tag name')
                 .skip(skip)
                 .limit(size)
