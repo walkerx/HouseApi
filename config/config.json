@@ -68,13 +68,10 @@
                         "cookie": {
                             "path": "/",
                             "httpOnly": true,
-                            "maxAge": 2592000000 //30天
+                            "maxAge": 2592000000
                         },
-                        //"rolling": true,
                         "resave": false,
-                        //每次都保存cookie变化，延长过期时间
                         "saveUninitialized": true,
-                        //客户端没有cookie的情况下，生成cookie保存session
                         "unset": "destroy",
                         "proxy": false
                     }
