@@ -53,12 +53,13 @@ let getAlbums = function(req, res, next){
         })
 };
 
+
 /**
  * 获取指定专辑
  */
-let getAlbum = function(req, res, next){
+var getAlbum = function(req, res, next){
     req.checkQuery('_id', '参数错误').isObjectId();
-    let errors = req.validationErrors();
+    var errors = req.validationErrors();
     if (errors) {
         return res.json({result: 2, data: errors[0].msg});
     }
@@ -70,18 +71,68 @@ let getAlbum = function(req, res, next){
             if (err){
                 return next(err);
             }
-            album.isVip = true;
-            if(!req.user
-                || !req.user.vipEndTime
-                || moment(req.user.vipEndTime).format('YYYYMMDD') < moment(new Date()).format('YYYYMMDD')
-            ){
-                album.unlock = album.pics.length - 5;
-                album.pics = album.pics.slice(0,6);
-                album.isVip = false;
-            }
-            return res.json({result: 1, data: album});
+            db.GirlAlbum
+                .count({tag: album.tag})
+                .exec(function(err, albumNum){
+                    if (err){
+                        return next(err);
+                    }
+                    var rNum = albumNum > 11 ? albumNum - 11: 0;
+                    var skip = Math.round(Math.random() * (rNum));
+                    db.GirlAlbum
+                        .find({_id:{$ne:req.query._id},tag: album.tag})
+                        .select('_id cover picNum tag name')
+                        .skip(skip)
+                        .limit(10)
+                        .exec(function(err, albums){
+                            if (err){
+                                return next(err);
+                            }
+                            album.moreAlbums = albums;
+                            album.isVip = true;
+                            if(!req.user
+                                || !req.user.vipEndTime
+                                || moment(req.user.vipEndTime).format('YYYYMMDD') < moment(new Date()).format('YYYYMMDD')
+                            ){
+                                album.unlock = album.pics.length - 5;
+                                album.pics = album.pics.slice(0,6);
+                                album.isVip = false;
+                            }
+                            return res.json({result: 1, data: album});
+                        })
+                });
         });
 };
+
+/**
+ * 获取指定专辑
+ */
+// let getAlbum = function(req, res, next){
+//     req.checkQuery('_id', '参数错误').isObjectId();
+//     let errors = req.validationErrors();
+//     if (errors) {
+//         return res.json({result: 2, data: errors[0].msg});
+//     }
+//     db.GirlAlbum
+//         .findOne({_id:req.query._id})
+//         .select('_id cover picNum pics tag name girl')
+//         .lean(true)
+//         .exec(function(err, album){
+//             if (err){
+//                 return next(err);
+//             }
+//             album.isVip = true;
+//             if(!req.user
+//                 || !req.user.vipEndTime
+//                 || moment(req.user.vipEndTime).format('YYYYMMDD') < moment(new Date()).format('YYYYMMDD')
+//             ){
+//                 album.unlock = album.pics.length - 5;
+//                 album.pics = album.pics.slice(0,6);
+//                 album.isVip = false;
+//             }
+//             return res.json({result: 1, data: album});
+//         });
+// };
 
 /**
  * 获取指定专辑的更多
@@ -209,7 +260,7 @@ module.exports = function (router) {
     router.get('/album', auth.isLogin, getAlbum);
 
     //获取指定专辑的更多
-    router.get('/album/more', getAlbumMore);
+    //router.get('/album/more', getAlbumMore);
 
     //积分墙
     router.get('/apps', getApps);
