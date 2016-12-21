@@ -193,7 +193,7 @@ let thirdPartyLogin = function (req, res, next) {
 };
 
 let logout = function (req, res, next) {
-    req.logOut(req);
+    req.logOut();
     return res.json({result: 1});
 };
 
