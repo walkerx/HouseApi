@@ -1,22 +1,18 @@
 'use strict';
 
-var express = require('express');
-var kraken = require('kraken-js');
+let express = require('express');
+let kraken = require('kraken-js');
 global.$ROOT = process.cwd();
 
-var db = require('./lib/database'),
-    expressValidator = require('./lib/validator')(),
-    redis = require('./redis/redis');
+let db = require('./lib/database'),
+    passport = require('passport'),
+    auth = require('./lib/auth'),
+    expressValidator = require('./lib/validator')();
 
-var options, app;
+let options, app;
 
-/*
- * Create and configure application. Also exports application instance for use by tests.
- * See https://github.com/krakenjs/kraken-js#options for additional configuration options.
- */
 options = {
     onconfig: function (config, next) {
-        redis.config(config.get('redis'));
         db.config(config.get('databaseConfig'));
         next(null, config);
     }
@@ -25,10 +21,14 @@ options = {
 app = module.exports = express();
 app.use(kraken(options));
 app.on('start', function () {
-    global.MongoDatabase = app.kraken.get('databaseConfig:database');
 });
 app.on('middleware:before:session', function (eventargs) {
     app.use(expressValidator);
 });
 app.on('middleware:after:session', function (eventargs) {
+    passport.serializeUser(auth.serializeUser);
+    passport.deserializeUser(auth.deserializeUser);
+    passport.use(auth.localStrategy());
+    app.use(passport.initialize());
+    app.use(passport.session());
 });

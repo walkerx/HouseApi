@@ -1,173 +1,137 @@
 'use strict';
 
-var db = require($ROOT + '/models/niceGirl'),
+let db = require($ROOT + '/models/niceGirl'),
     tip = require($ROOT + '/config/tip.js'),
     moment = require('moment'),
-    utils = require($ROOT + '/lib/utils'),
+    passport = require('passport'),
     auth = require($ROOT + '/lib/auth'),
     _ = require('lodash'),
-    redis = require($ROOT + '/redis'),
     config = require($ROOT + '/config/config'),
     request = require('request'),
     async = require('async');
 
-var responseUserInfo = function(user){
-    var select = '_id account qq weChat provider vipEndTime';
-    return _.pick(user,select.split(' '));
+let responseUserInfo = function (user) {
+    let select = '_id account qq weChat provider vipEndTime';
+    return _.pick(user, select.split(' '));
 };
 
 //注册流程
-var register = function (req, res, next) {
+let register = function (req, res, next) {
     req.checkBody('account', '昵称须为2-16位字母数字下划线汉字').notEmpty().len(2, 16).isValidChar();
     req.checkBody('passWd', '密码须为6-16位字母数字下划线汉字').notEmpty().len(6, 16).isValidChar();
-    var errors = req.validationErrors();
+    let errors = req.validationErrors();
     if (errors) {
         return res.json({result: 2, data: errors[0].msg});
     }
-    db.GirlUser
-        .findOne({account: req.body.account})
-        .lean(true)
-        .exec(function (err, user) {
+    db.GirlUser.findOne({account: req.body.account}).lean(true).exec(function (err, user) {
             if (err) {
                 return next(err);
             }
             if (user) {
                 return res.json({result: 2, data: tip.user.nickExist});
             }
-            var now = new Date();
+            let now = new Date();
             //保存用户信息
-            var userObj = new db.GirlUser({
+            let userObj = new db.GirlUser({
                 account: req.body.account,
                 register_at: now,
                 lastLogin_at: now,
                 provider: 1,
                 status: 1,
-                session: req.sessionID
+                // session: req.sessionID
             });
             userObj.set('password', req.body.passWd);
             userObj.save(function (err, user) {
                 if (err) {
                     return res.json({result: 2, data: err});
                 }
-                req.session.user = user._id;
-                req.session.save(function(err){
-                    if (err) {
-                        return res.json({result: 2, data: err});
-                    }
-                    var result = responseUserInfo(user);
-                    return res.json({result: 1, data: result});
-                })
+                // req.session.user = user._id.toString();
+                //req.session.save(function (err) {
+                 //   if (err) {
+                //        return res.json({result: 2, data: err});
+                //    }
+                    return res.json({result: 1, data: responseUserInfo(user)});
+                //})
             });
         });
-
 };
 
-var deleteSession = function(req, user, callback){
-    if(req.sessionID === user.session){
-        return callback(null)
-    }
-    redis.Session.deleteKey(user.session, function(err){
-        return callback(err)
-    })
-};
+// let deleteSession = function (req, user, callback) {
+//     return callback(null)
+//     if (req.sessionID === user.session) {
+//         return callback(null)
+//     }
+//     req.session.destroy(user.session, function (err) {
+//         return callback(null)
+//     });
+//
+// };
 
-var updateUserInfo = function(req, user, now, callback){
-    deleteSession(req, user, function(err){
-        if (err) {
-            return callback(err);
-        }
-        db.GirlUser.update(
-            {_id:user._id},
-            {
-                session: req.sessionID,
-                lastLogin_at: now
-            }
-        ).exec(function(err){
-            if (err) {
-                return callback(err);
-            }
-            req.session.user = user._id;
-            req.session.save(function(err){
-                return callback(err);
-            })
-        });
-    });
-};
 
 //登录
-var login = function (req, res, next) {
+let login = function (req, res, next) {
     req.checkBody('account', '昵称须为2-16位字母数字下划线汉字').notEmpty().len(2, 16).isValidChar();
     req.checkBody('passWd', '密码须为6-16位字母数字下划线汉字').notEmpty().len(6, 16).isValidChar();
-    var errors = req.validationErrors();
+    let errors = req.validationErrors();
     if (errors) {
         return res.json({result: 2, data: errors[0].msg});
     }
-    db.GirlUser
-        .findOne({nickname: req.body.nickname})
-        .exec(function (err, user) {
-            if (err) {
-                return next(err);
-            }
-            if (!user) {
-                return res.json({result: 2, data: '用户不存在或者密码错误'});
-            }
-            if (!user.authenticate(req.body.passWd)) {
-                return res.json({result: 2, data: '用户不存在或者密码错误'});
-            }
-            var now = new Date();
-            updateUserInfo(req, user, now, function(err){
-                if (err) {
-                    return res.json({result: 2, data: err});
-                }
-                var result = responseUserInfo(user);
-                return res.json({result: 1, data: result});
-            });
 
-
+    passport.authenticate('local', function (err, user, info) {
+        if (err) {
+            return next(err)
+        }
+        if (!user) {
+            return res.json({result: 2, data: info.message});
+        }
+        req.logIn(user, function(err) {
+            if (err) { return next(err); }
+            return res.json({result: 1, data: responseUserInfo(user)});
         });
+    })(req, res, next);
 };
 
-var getThirdPartyUid = function(code,type,callback){
-    if(type === 1){  //qq
-        return callback(null,{uid:'1111111',openId:'123123123'});
-    }else{
-        var url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='
+let getThirdPartyUid = function (code, type, callback) {
+    if (type === 1) {  //qq
+        return callback(null, {uid: '1111111', openId: '123123123'});
+    } else {
+        let url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='
             + config.wxLogin.AppID + '&secret='
             + config.wxLogin.AppSecret + '&code='
             + code + '&grant_type=authorization_code';
         request(url, function (error, response, body) {
-            if(error){
+            if (error) {
                 return callback(error);
             }
-            if(!response || response && response.statusCode !== 200){
-                var err = '微信token请求错误';
+            if (!response || response && response.statusCode !== 200) {
+                let err = '微信token请求错误';
                 return callback(err);
             }
             if (response.statusCode == 200) {
-                var result = JSON.parse(body)
-                if(result.errcode){
+                let result = JSON.parse(body)
+                if (result.errcode) {
                     return callback(result.errmsg);
                 }
-                return callback(null,result);
+                return callback(null, result);
             }
         })
     }
 };
 
-var thirdPartyLogin = function (req, res, next) {
+let thirdPartyLogin = function (req, res, next) {
     req.checkBody('type', '登录类型错误').notEmpty().isInt({min: 1, max: 2});  //1:qq 2:weChat
     req.checkBody('code', '获取第三方code失败').notEmpty();
-    var errors = req.validationErrors();
+    let errors = req.validationErrors();
     if (errors) {
         return res.json({result: 2, data: errors[0].msg});
     }
-    var provider,
+    let provider,
         providerObj = {},
         condition = {},
         code = req.body.code,
         type = req.body.type;
-    getThirdPartyUid(code,type,function(err, result){
-        if(err){
+    getThirdPartyUid(code, type, function (err, result) {
+        if (err) {
             return next(err);
         }
         switch (parseInt(type)) {
@@ -193,10 +157,10 @@ var thirdPartyLogin = function (req, res, next) {
             default :
                 return res.json({result: 2, data: '类型错误'});
         }
-        var nickname = provider + new Date().getTime(),
+        let nickname = provider + new Date().getTime(),
             now = new Date().getTime();
         //保存用户信息
-        var updateObj = {
+        let updateObj = {
             lastLogin_at: now,
             provider: provider,
             status: 1
@@ -218,42 +182,24 @@ var thirdPartyLogin = function (req, res, next) {
                 if (err) {
                     return next(err);
                 }
-                updateUserInfo(req, user, now, function(err){
-                    if (err) {
-                        return res.json({result: 2, data: err});
-                    }
-                    var result = responseUserInfo(user);
-                    return res.json({result: 1, data: result});
-                });
+                //updateUserInfo(req, user, now, function (err) {
+                //     if (err) {
+                //         return res.json({result: 2, data: err});
+                //     }
+                    return res.json({result: 1, data: responseUserInfo(user)});
+                //});
             });
     });
 
 };
 
-var logout = function (req, res, next) {
-    db.GirlUser
-        .findOneAndUpdate(
-            {_id: req.user._id},
-            {
-                $unset: { session:1 }
-            },
-            {upsert: false, new: false}
-        ).exec(function (err, user) {
-            if (err) {
-                return next(err);
-            }
-            redis.Session.deleteKey(user.session, function(err){
-                if (err) {
-                    return next(err);
-                }
-                var result = responseUserInfo(user);
-                return res.json({result: 1, data: result});
-            })
-        });
+let logout = function (req, res, next) {
+    req.logOut(req);
+    return res.json({result: 1});
 };
 
-var getMe  = function (req, res, next) {
-    var result = responseUserInfo(req.user);
+let getMe = function (req, res, next) {
+    let result = responseUserInfo(req.user);
     return res.json({result: 1, data: result});
 };
 

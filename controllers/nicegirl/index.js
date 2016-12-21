@@ -1,6 +1,6 @@
 'use strict';
 
-var db = require($ROOT + '/models/nicegirl/index'),
+let db = require($ROOT + '/models/nicegirl/index'),
     utils = require($ROOT + '/lib/utils'),
     moment = require('moment'),
     auth = require($ROOT + '/lib/auth')
@@ -8,7 +8,7 @@ var db = require($ROOT + '/models/nicegirl/index'),
 /**
  * 获取标签列表
  */
-var getTags = function(req, res){
+let getTags = function(req, res){
     db.GirlTags
         .find({status:1})
         .select('_id name')
@@ -25,15 +25,15 @@ var getTags = function(req, res){
 /**
  * 获取指定标签下的专辑列表
  */
-var getAlbums = function(req, res, next){
+let getAlbums = function(req, res, next){
     req.checkQuery('tag', '参数错误').isChar();
     req.checkQuery('size', '参数错误').isPositive();
     req.checkQuery('offset', '参数错误').isNonNegative();
-    var errors = req.validationErrors();
+    let errors = req.validationErrors();
     if (errors) {
         return res.json({result: 2, data: errors[0].msg});
     }
-    var size = parseInt(req.query.size),
+    let size = parseInt(req.query.size),
         skip = parseInt(req.query.offset);
 
     db.GirlAd
@@ -56,9 +56,9 @@ var getAlbums = function(req, res, next){
 /**
  * 获取指定专辑
  */
-var getAlbum = function(req, res, next){
+let getAlbum = function(req, res, next){
     req.checkQuery('_id', '参数错误').isObjectId();
-    var errors = req.validationErrors();
+    let errors = req.validationErrors();
     if (errors) {
         return res.json({result: 2, data: errors[0].msg});
     }
@@ -86,15 +86,15 @@ var getAlbum = function(req, res, next){
 /**
  * 获取指定专辑的更多
  */
-var getAlbumMore = function(req, res, next){
+let getAlbumMore = function(req, res, next){
     req.checkQuery('_id', '参数错误').isObjectId();
     req.checkQuery('size', '参数错误').isPositive();
     req.checkQuery('offset', '参数错误').isNonNegative();
-    var errors = req.validationErrors();
+    let errors = req.validationErrors();
     if (errors) {
         return res.json({result: 2, data: errors[0].msg});
     }
-    var size = parseInt(req.query.size),
+    let size = parseInt(req.query.size),
         skip = parseInt(req.query.offset);
     db.GirlAlbum
         .find({_id:{$ne:req.query._id}})
@@ -112,7 +112,7 @@ var getAlbumMore = function(req, res, next){
 /**
  * 获取积分墙数据
  */
-var getApps = function(req, res){
+let getApps = function(req, res){
     db.GirlApp
         .find()
         .exec(function(err, apps){
@@ -126,9 +126,9 @@ var getApps = function(req, res){
 /**
  * 获取模特详情
  */
-var getModelDetail = function(req, res, next){
+let getModelDetail = function(req, res, next){
     req.checkQuery('id', '参数错误').isObjectId();
-    var errors = req.validationErrors();
+    let errors = req.validationErrors();
     if (errors) {
         return res.json({result: 2, data: errors[0].msg});
     }
@@ -159,7 +159,7 @@ var getModelDetail = function(req, res, next){
 /**
  * 获取人气模特
  */
-var getModelHot = function(req, res, next){
+let getModelHot = function(req, res, next){
     db.GirlInfo
         .find({status: 1, hot: 1})
         .select('_id name thumbnail')
@@ -174,14 +174,14 @@ var getModelHot = function(req, res, next){
 /**
  * 获取全部模特
  */
-var getModelAll = function(req, res, next){
+let getModelAll = function(req, res, next){
     req.checkQuery('size', '参数错误').isPositive();
     req.checkQuery('offset', '参数错误').isNonNegative();
-    var errors = req.validationErrors();
+    let errors = req.validationErrors();
     if (errors) {
         return res.json({result: 2, data: errors[0].msg});
     }
-    var size = parseInt(req.query.size),
+    let size = parseInt(req.query.size),
         skip = parseInt(req.query.offset);
 
     db.GirlInfo
@@ -206,7 +206,7 @@ module.exports = function (router) {
     router.get('/albums', getAlbums);
 
     //获取指定专辑
-    router.get('/album', auth.getUser, getAlbum);
+    router.get('/album', auth.isLogin, getAlbum);
 
     //获取指定专辑的更多
     router.get('/album/more', getAlbumMore);

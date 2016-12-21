@@ -1,7 +1,7 @@
 'use strict';
 var util = require($ROOT + '/lib/utils');
 
-module.exports = function (template) {
+module.exports = function () {
     return function serverError(err, req, res, next) {
         util.logError(req, err);
         console.log(err)
