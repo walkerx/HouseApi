@@ -1,6 +1,6 @@
 'use strict';
 
-let db = require($ROOT + '/models/nicegirl/index'),
+let db = require($ROOT + '/models/niceGirl/index'),
     utils = require($ROOT + '/lib/utils'),
     moment = require('moment'),
     auth = require($ROOT + '/lib/auth')

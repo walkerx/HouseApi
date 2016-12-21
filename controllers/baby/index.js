@@ -1,8 +1,8 @@
 'use strict';
 
-var db = require($ROOT + '/models/nicegirl/index'),
+var db = require($ROOT + '/models/niceGirl/index'),
     utils = require($ROOT + '/lib/utils'),
-    auth = require($ROOT + '/lib/auth')
+    auth = require($ROOT + '/lib/auth');
 
 /**
  * 获取标签列表
