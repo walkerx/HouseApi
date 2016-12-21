@@ -260,7 +260,7 @@ module.exports = function (router) {
     router.get('/album', auth.isLogin, getAlbum);
 
     //获取指定专辑的更多
-    //router.get('/album/more', getAlbumMore);
+    router.get('/album/more', getAlbumMore);
 
     //积分墙
     router.get('/apps', getApps);
