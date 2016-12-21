@@ -24,36 +24,33 @@ let register = function (req, res, next) {
         return res.json({result: 2, data: errors[0].msg});
     }
     db.GirlUser.findOne({account: req.body.account}).lean(true).exec(function (err, user) {
+        if (err) {
+            return next(err);
+        }
+        if (user) {
+            return res.json({result: 2, data: tip.user.nickExist});
+        }
+        let now = new Date();
+        //保存用户信息
+        let userObj = new db.GirlUser({
+            account: req.body.account,
+            register_at: now,
+            lastLogin_at: now,
+            provider: 1,
+            status: 1,
+            // session: req.sessionID
+        });
+        userObj.set('password', req.body.passWd);
+        userObj.save(function (err, user) {
             if (err) {
-                return next(err);
+                return res.json({result: 2, data: err});
             }
-            if (user) {
-                return res.json({result: 2, data: tip.user.nickExist});
-            }
-            let now = new Date();
-            //保存用户信息
-            let userObj = new db.GirlUser({
-                account: req.body.account,
-                register_at: now,
-                lastLogin_at: now,
-                provider: 1,
-                status: 1,
-                // session: req.sessionID
-            });
-            userObj.set('password', req.body.passWd);
-            userObj.save(function (err, user) {
-                if (err) {
-                    return res.json({result: 2, data: err});
-                }
-                // req.session.user = user._id.toString();
-                //req.session.save(function (err) {
-                 //   if (err) {
-                //        return res.json({result: 2, data: err});
-                //    }
-                    return res.json({result: 1, data: responseUserInfo(user)});
-                //})
+            req.logIn(user, function(err) {
+                if (err) { return next(err); }
+                return res.json({result: 1, data: responseUserInfo(user)});
             });
         });
+    });
 };
 
 // let deleteSession = function (req, user, callback) {
@@ -84,8 +81,10 @@ let login = function (req, res, next) {
         if (!user) {
             return res.json({result: 2, data: info.message});
         }
-        req.logIn(user, function(err) {
-            if (err) { return next(err); }
+        req.logIn(user, function (err) {
+            if (err) {
+                return next(err);
+            }
             return res.json({result: 1, data: responseUserInfo(user)});
         });
     })(req, res, next);
@@ -182,12 +181,12 @@ let thirdPartyLogin = function (req, res, next) {
                 if (err) {
                     return next(err);
                 }
-                //updateUserInfo(req, user, now, function (err) {
-                //     if (err) {
-                //         return res.json({result: 2, data: err});
-                //     }
+                req.logIn(user, function (err) {
+                    if (err) {
+                        return next(err);
+                    }
                     return res.json({result: 1, data: responseUserInfo(user)});
-                //});
+                });
             });
     });
 
