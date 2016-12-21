@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 var utils = require($ROOT + '/lib/utils');
-var paths = utils.getPath($ROOT + '/models/nicegirl');
+var paths = utils.getPath($ROOT + '/models/niceGirl');
 paths.forEach(function (path) {
     require(path);
 });
