@@ -94,70 +94,19 @@ var getAlbum = function(req, res, next){
                                 || !req.user.vipEndTime
                                 || moment(req.user.vipEndTime).format('YYYYMMDD') < moment(new Date()).format('YYYYMMDD')
                             ){
-                                album.unlock = album.pics.length - 5;
-                                album.pics = album.pics.slice(0,6);
+                                if(album.pics && album.pics instanceof Array){
+                                    album.unlock = album.pics.length >9? album.pics.length-9 : 0;
+                                    album.pics = album.pics.slice(0,10);
+                                }else{
+                                    album.unlock = 0;
+                                    album.pics = [];
+                                }
                                 album.isVip = false;
                             }
                             return res.json({result: 1, data: album});
                         })
                 });
         });
-};
-
-/**
- * 获取指定专辑
- */
-// let getAlbum = function(req, res, next){
-//     req.checkQuery('_id', '参数错误').isObjectId();
-//     let errors = req.validationErrors();
-//     if (errors) {
-//         return res.json({result: 2, data: errors[0].msg});
-//     }
-//     db.GirlAlbum
-//         .findOne({_id:req.query._id})
-//         .select('_id cover picNum pics tag name girl')
-//         .lean(true)
-//         .exec(function(err, album){
-//             if (err){
-//                 return next(err);
-//             }
-//             album.isVip = true;
-//             if(!req.user
-//                 || !req.user.vipEndTime
-//                 || moment(req.user.vipEndTime).format('YYYYMMDD') < moment(new Date()).format('YYYYMMDD')
-//             ){
-//                 album.unlock = album.pics.length - 5;
-//                 album.pics = album.pics.slice(0,6);
-//                 album.isVip = false;
-//             }
-//             return res.json({result: 1, data: album});
-//         });
-// };
-
-/**
- * 获取指定专辑的更多
- */
-let getAlbumMore = function(req, res, next){
-    req.checkQuery('_id', '参数错误').isObjectId();
-    req.checkQuery('size', '参数错误').isPositive();
-    req.checkQuery('offset', '参数错误').isNonNegative();
-    let errors = req.validationErrors();
-    if (errors) {
-        return res.json({result: 2, data: errors[0].msg});
-    }
-    let size = parseInt(req.query.size),
-        skip = parseInt(req.query.offset);
-    db.GirlAlbum
-        .find({_id:{$ne:req.query._id}})
-        .select('_id cover picNum tag name')
-        .skip(skip)
-        .limit(size)
-        .exec(function(err, albums){
-            if (err){
-                return next(err);
-            }
-            return res.json({result: 1, data: {albums: albums}});
-        })
 };
 
 /**
@@ -257,10 +206,7 @@ module.exports = function (router) {
     router.get('/albums', getAlbums);
 
     //获取指定专辑
-    router.get('/album', auth.isLogin, getAlbum);
-
-    //获取指定专辑的更多
-    router.get('/album/more', getAlbumMore);
+    router.get('/album', getAlbum);
 
     //积分墙
     router.get('/apps', getApps);
