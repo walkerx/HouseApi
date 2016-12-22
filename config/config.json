@@ -71,7 +71,7 @@
                             "maxAge": 2592000000
                         },
                         "resave": false,
-                        "saveUninitialized": true,
+                        "saveUninitialized": false,
                         "unset": "destroy",
                         "proxy": false
                     }
