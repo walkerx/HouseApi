@@ -133,8 +133,10 @@ let thirdPartyLogin = function (req, res, next) {
         if (err) {
             return next(err);
         }
+        let account = '';
         switch (parseInt(type)) {
             case 1:
+                account = 'QQ登录';
                 provider = 'qq';
                 condition = {'qq.uid': result.uid};
                 providerObj = {
@@ -142,6 +144,7 @@ let thirdPartyLogin = function (req, res, next) {
                 };
                 break;
             case 2:
+                account = '微信登录';
                 provider = 'weChat';
                 condition = {'weChat.uid': result.unionid};
                 providerObj = {
@@ -156,8 +159,7 @@ let thirdPartyLogin = function (req, res, next) {
             default :
                 return res.json({result: 2, data: '类型错误'});
         }
-        let nickname = provider + new Date().getTime(),
-            now = new Date().getTime();
+        let now = new Date().getTime();
         //保存用户信息
         let updateObj = {
             lastLogin_at: now,
@@ -171,7 +173,7 @@ let thirdPartyLogin = function (req, res, next) {
                 {
                     $set: updateObj,
                     $setOnInsert: {
-                        account: nickname,
+                        account: account,
                         register_at: now
                     }
                 },
