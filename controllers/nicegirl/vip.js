@@ -214,32 +214,6 @@ var finishOrder = function (uid, totalPrice, tradeId, buyerId, callback) {
 
 var aliNotify = function (req, res, next) {
     var postParams = req.body;
-    postParams = { total_amount: '0.01',
-        buyer_id: '2088602122416433',
-        trade_no: '2016122321001004430292210088',
-        body: '开通会员',
-        notify_time: '2016-12-23 15:06:09',
-        subject: '年度会员',
-        sign_type: 'RSA',
-        buyer_logon_id: '182****9853',
-        auth_app_id: '2016120804023415',
-        charset: 'utf-8',
-        notify_type: 'trade_status_sync',
-        invoice_amount: '0.01',
-        out_trade_no: '2016122315060043374',
-        trade_status: 'TRADE_SUCCESS',
-        gmt_payment: '2016-12-23 15:06:08',
-        version: '1.0',
-        point_amount: '0.00',
-        sign: 'PcFLZ9tXK32/NZlUOUHFIg7lBT2Q/OjJHcwudkxH//0qBX314HMNp/tV4HoesSfMsyFKrIllXJivvKBmN18EMQr2bqRGj59h4Qh8wjL2myucmhiVdKfFfr9VrxE9gFVLLnqMf1WgM4Jf72zhZ5c9N7PBKNBPaiaGAyBO89v8qJY=',
-        gmt_create: '2016-12-23 15:06:08',
-        buyer_pay_amount: '0.01',
-        receipt_amount: '0.01',
-        fund_bill_list: '[{"amount":"0.01","fundChannel":"ALIPAYACCOUNT"}]',
-        app_id: '2016120804023415',
-        seller_id: '2088522422093751',
-        notify_id: '213fad53d5dfcc5f1c343d181606d32jbi',
-        seller_email: '1980867962@qq.com' };
     var signResult = postParams.sign;
     var info = [];
     for (var notifyKey in postParams) {
