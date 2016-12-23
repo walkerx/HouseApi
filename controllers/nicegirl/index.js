@@ -41,16 +41,13 @@ let getAlbums = function(req, res, next){
         .select('-created_at')
         .exec(function(err, ads){
             db.GirlAlbum.find({tag: req.query.tag, picNum: {$gt: 10}})
-                .select('_id cover picNum tag name pics')
+                .select('_id cover picNum tag name')
                 .skip(skip)
                 .limit(size)
                 .exec(function(err, albums){
                     if (err){
                         return next(err);
                     }
-                    albums.forEach(function(album){
-                        album.cover = album.pics[0];
-                    });
                     return res.json({result: 1, data: {albums: albums, ads: ads}});
                 })
         })
