@@ -143,7 +143,6 @@ var order = function (req, res, next) {
                         'version=1.0'
                     ];
                     var str = aliPayInfo.join('&');
-                    console.log(str)
                     var sign = crypto.createSign('RSA-SHA1');
                     sign.update(str, 'utf-8');
                     aliPayInfo.push('sign=' + sign.sign(config.aliPay.privateKey,'base64'));
@@ -151,7 +150,6 @@ var order = function (req, res, next) {
                         var key = value.split('=')[0] + '=';
                         aliPayInfo[index] = key + encodeURIComponent(value.split(key)[1]);
                     });
-                    console.log(aliPayInfo.join('&'))
                     return res.json({result: 1, data:aliPayInfo.join('&')});
                 }
             });

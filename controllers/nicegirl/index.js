@@ -68,55 +68,68 @@ var getAlbum = function(req, res, next){
     if (errors) {
         return res.json({result: 2, data: errors[0].msg});
     }
-    db.GirlAlbum
-        .findOne({_id:req.query._id})
-        .select('_id cover picNum pics tag name girl')
+    var osType = 1;
+    if(req.headers['user-agent'] === 'IOS House'){
+        osType = 2;
+    }
+    db.GirlSystem
+        .findOne({status:1,osType: osType})
+        .select('hideVip')
         .lean(true)
-        .exec(function(err, album){
+        .exec(function(err, system){
             if (err){
                 return next(err);
             }
             db.GirlAlbum
-                .count({tag: album.tag, picNum: {$gt: 20}})
-                .exec(function(err, albumNum){
+                .findOne({_id:req.query._id})
+                .select('_id cover picNum pics tag name girl')
+                .lean(true)
+                .exec(function(err, album){
                     if (err){
                         return next(err);
                     }
-                    var rNum = albumNum > 11 ? albumNum - 11: 0;
-                    var skip = Math.round(Math.random() * (rNum));
                     db.GirlAlbum
-                        .find({_id:{$ne:req.query._id},tag: album.tag})
-                        .select('_id cover picNum tag name pics')
-                        .skip(skip)
-                        .limit(10)
-                        .lean(true)
-                        .exec(function(err, moreAlbums){
+                        .count({tag: album.tag, picNum: {$gt: 20}})
+                        .exec(function(err, albumNum){
                             if (err){
                                 return next(err);
                             }
-                            moreAlbums.forEach(function(moreAlbum){
-                                moreAlbum.cover = moreAlbum.pics[0];
-                                delete moreAlbum.pics;
-                            });
-                            album.moreAlbums = moreAlbums;
-                            album.isVip = true;
-                            if(!req.user
-                                || !req.user.vipEndTime
-                                || moment(req.user.vipEndTime).format('YYYYMMDD') < moment(new Date()).format('YYYYMMDD')
-                            ){
-                                if(album.pics && album.pics instanceof Array){
-                                    album.unlock = album.pics.length >19? album.pics.length-19 : 0;
-                                    album.pics = album.pics.slice(0,20);
-                                }else{
-                                    album.unlock = 0;
-                                    album.pics = [];
-                                }
-                                album.isVip = false;
-                            }
-                            return res.json({result: 1, data: album});
-                        })
+                            var rNum = albumNum > 11 ? albumNum - 11: 0;
+                            var skip = Math.round(Math.random() * (rNum));
+                            db.GirlAlbum
+                                .find({_id:{$ne:req.query._id},tag: album.tag})
+                                .select('_id cover picNum tag name pics')
+                                .skip(skip)
+                                .limit(10)
+                                .lean(true)
+                                .exec(function(err, moreAlbums){
+                                    if (err){
+                                        return next(err);
+                                    }
+                                    moreAlbums.forEach(function(moreAlbum){
+                                        moreAlbum.cover = moreAlbum.pics[0];
+                                        delete moreAlbum.pics;
+                                    });
+                                    album.moreAlbums = moreAlbums;
+                                    album.isVip = true;
+                                    if(!req.user || !req.user.vipEndTime || moment(req.user.vipEndTime).format('YYYYMMDD') < moment(new Date()).format('YYYYMMDD')){
+                                        if(!system || system.hideVip !== 1){
+                                            if(album.pics && album.pics instanceof Array){
+                                                album.unlock = album.pics.length >19? album.pics.length-19 : 0;
+                                                album.pics = album.pics.slice(0,20);
+                                            }else{
+                                                album.unlock = 0;
+                                                album.pics = [];
+                                            }
+                                            album.isVip = false;
+                                        }
+                                    }
+                                    return res.json({result: 1, data: album});
+                                })
+                        });
                 });
         });
+    
 };
 
 /**
