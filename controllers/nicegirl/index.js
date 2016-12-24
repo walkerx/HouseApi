@@ -40,7 +40,7 @@ let getAlbums = function(req, res, next){
         .findOne()
         .select('-created_at')
         .exec(function(err, ads){
-            db.GirlAlbum.find({tag: req.query.tag, picNum: {$gt: 10}})
+            db.GirlAlbum.find({tag: req.query.tag, picNum: {$gt: 20}})
                 .select('_id cover picNum tag name pics')
                 .skip(skip)
                 .limit(size)
@@ -77,7 +77,7 @@ var getAlbum = function(req, res, next){
                 return next(err);
             }
             db.GirlAlbum
-                .count({tag: album.tag})
+                .count({tag: album.tag, picNum: {$gt: 20}})
                 .exec(function(err, albumNum){
                     if (err){
                         return next(err);
@@ -105,8 +105,8 @@ var getAlbum = function(req, res, next){
                                 || moment(req.user.vipEndTime).format('YYYYMMDD') < moment(new Date()).format('YYYYMMDD')
                             ){
                                 if(album.pics && album.pics instanceof Array){
-                                    album.unlock = album.pics.length >9? album.pics.length-9 : 0;
-                                    album.pics = album.pics.slice(0,10);
+                                    album.unlock = album.pics.length >19? album.pics.length-19 : 0;
+                                    album.pics = album.pics.slice(0,20);
                                 }else{
                                     album.unlock = 0;
                                     album.pics = [];
