@@ -86,14 +86,19 @@ var getAlbum = function(req, res, next){
                     var skip = Math.round(Math.random() * (rNum));
                     db.GirlAlbum
                         .find({_id:{$ne:req.query._id},tag: album.tag})
-                        .select('_id cover picNum tag name')
+                        .select('_id cover picNum tag name pics')
                         .skip(skip)
                         .limit(10)
-                        .exec(function(err, albums){
+                        .lean(true)
+                        .exec(function(err, moreAlbums){
                             if (err){
                                 return next(err);
                             }
-                            album.moreAlbums = albums;
+                            moreAlbums.forEach(function(moreAlbum){
+                                moreAlbum.cover = moreAlbum.pics[0];
+                                delete moreAlbum.pics;
+                            });
+                            album.moreAlbums = moreAlbums;
                             album.isVip = true;
                             if(!req.user
                                 || !req.user.vipEndTime
