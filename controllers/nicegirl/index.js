@@ -40,7 +40,7 @@ let getAlbums = function(req, res, next){
         .findOne()
         .select('-created_at')
         .exec(function(err, ads){
-            db.GirlAlbum.find({tag: req.query.tag, picNum: {$gt: 20}})
+            db.GirlAlbum.find({tag: req.query.tag, picNum: {$gt: 20}, status:1})
                 .select('_id cover picNum tag name pics')
                 .skip(skip)
                 .limit(size)
@@ -81,7 +81,7 @@ var getAlbum = function(req, res, next){
                 return next(err);
             }
             db.GirlAlbum
-                .findOne({_id:req.query._id})
+                .findOne({_id:req.query._id, status:1})
                 .select('_id cover picNum pics tag name girl')
                 .lean(true)
                 .exec(function(err, album){
@@ -89,7 +89,7 @@ var getAlbum = function(req, res, next){
                         return next(err);
                     }
                     db.GirlAlbum
-                        .count({tag: album.tag, picNum: {$gt: 20}})
+                        .count({tag: album.tag, picNum: {$gt: 20}, status:1})
                         .exec(function(err, albumNum){
                             if (err){
                                 return next(err);
@@ -97,7 +97,7 @@ var getAlbum = function(req, res, next){
                             var rNum = albumNum > 11 ? albumNum - 11: 0;
                             var skip = Math.round(Math.random() * (rNum));
                             db.GirlAlbum
-                                .find({_id:{$ne:req.query._id},tag: album.tag})
+                                .find({_id:{$ne:req.query._id},tag: album.tag, status:1})
                                 .select('_id cover picNum tag name pics')
                                 .skip(skip)
                                 .limit(10)
