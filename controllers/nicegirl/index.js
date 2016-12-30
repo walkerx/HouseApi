@@ -41,6 +41,7 @@ let getAlbums = function(req, res, next){
         .select('-created_at')
         .exec(function(err, ads){
             db.GirlAlbum.find({tag: req.query.tag, picNum: {$gt: 20}, status:1})
+                .sort({update_at: -1})
                 .select('_id cover picNum tag name pics')
                 .skip(skip)
                 .limit(size)
@@ -129,7 +130,7 @@ var getAlbum = function(req, res, next){
                         });
                 });
         });
-    
+
 };
 
 /**
