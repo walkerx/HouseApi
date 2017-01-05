@@ -18,7 +18,13 @@ let getTags = function(req, res, next){
                 return next(err);
             }
             if(req.headers['user-agent'] === 'IOS House'){
-                tags.splice(0,2);
+                let result = [];
+                tags.forEach(function(tag){
+                    if(tag.name !== '热门' && tag.name !== '性感' && tag.name !== '学生'){
+                        result.push(tag)
+                    }
+                });
+                tags = result;
             }
             return res.json({result: 1, data: tags});
         });
