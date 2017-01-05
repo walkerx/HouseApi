@@ -8,7 +8,7 @@ let db = require($ROOT + '/models/niceGirl/index'),
 /**
  * 获取标签列表
  */
-let getTags = function(req, res){
+let getTags = function(req, res, next){
     db.GirlTags
         .find({status:1})
         .select('_id name')
@@ -17,7 +17,9 @@ let getTags = function(req, res){
             if (err){
                 return next(err);
             }
-
+            if(req.headers['user-agent'] === 'IOS House'){
+                tags.splice(0,2);
+            }
             return res.json({result: 1, data: tags});
         });
 };
