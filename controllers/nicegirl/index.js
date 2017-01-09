@@ -20,7 +20,7 @@ let getTags = function(req, res, next){
             if(req.headers['user-agent'] === 'IOS House'){
                 let result = [];
                 tags.forEach(function(tag){
-                    if(tag.name !== '热门' && tag.name !== '性感' && tag.name !== '学生'){
+                    if(tag.name === '制服'){
                         result.push(tag)
                     }
                 });
