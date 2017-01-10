@@ -17,15 +17,21 @@ let getTags = function(req, res, next){
             if (err){
                 return next(err);
             }
+            let result = [];
             if(req.headers['user-agent'] === 'IOS House'){
-                let result = [];
                 tags.forEach(function(tag){
-                    if(tag.name === '制服'){
+                    if(tag.name === '热'){
                         result.push(tag)
                     }
                 });
-                tags = result;
+            }else{
+                tags.forEach(function(tag){
+                    if(tag.name !== '热'){
+                        result.push(tag)
+                    }
+                });
             }
+            tags = result;
             return res.json({result: 1, data: tags});
         });
 };
